@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.felix.karaf.main;
+package org.apache.karaf.main;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,12 +29,12 @@ import java.util.logging.Logger;
  * Represents an exclusive lock on a database,
  * used to avoid multiple Karaf instances attempting
  * to become master.
- * 
+ *
  * @version $Revision: $
  */
-public class MySQLJDBCLock implements Lock {
+public class DefaultJDBCLock implements Lock {
 
-    private static final Logger LOG = Logger.getLogger(MySQLJDBCLock.class.getName());
+    private static final Logger LOG = Logger.getLogger(DefaultJDBCLock.class.getName());
     private static final String PROPERTY_LOCK_URL               = "karaf.lock.jdbc.url";
     private static final String PROPERTY_LOCK_JDBC_DRIVER       = "karaf.lock.jdbc.driver";
     private static final String PROPERTY_LOCK_JDBC_USER         = "karaf.lock.jdbc.user";
@@ -45,16 +45,15 @@ public class MySQLJDBCLock implements Lock {
 
     private final Statements statements;
     private Connection lockConnection;
-    private String url;
-    private String database;
-    private String driver;
-    private String user; 
+    private final String url;
+    private final String driver;
+    private String user;
     private String password;
     private String table;
     private String clusterName;
     private int timeout;
 
-    public MySQLJDBCLock(Properties props) {
+    public DefaultJDBCLock(Properties props) {
         LOG.addHandler(BootstrapLogManager.getDefaultHandler());
         this.url = props.getProperty(PROPERTY_LOCK_URL);
         this.driver = props.getProperty(PROPERTY_LOCK_JDBC_DRIVER);
@@ -66,40 +65,14 @@ public class MySQLJDBCLock implements Lock {
         this.lockConnection = null;
         if (table == null) { table = "KARAF_LOCK"; }
         if ( clusterName == null) { clusterName = "karaf"; }
-        if (time != null) { 
-            this.timeout = Integer.parseInt(time) * 1000; 
+        this.statements = new Statements(table, clusterName);
+        if (time != null) {
+            this.timeout = Integer.parseInt(time) * 1000;
         } else {
             this.timeout = 10000; // 10 seconds
         }
         if (user == null) { user = ""; }
         if (password == null) { password = ""; }
-
-        int db = props.getProperty(PROPERTY_LOCK_URL).lastIndexOf("/");
-        this.url = props.getProperty(PROPERTY_LOCK_URL).substring(0, db);
-        this.database = props.getProperty(PROPERTY_LOCK_URL).substring(db +1);
-        this.statements = new Statements(database, table, clusterName);
-        testDB();
-    }
-
-    /**
-     * testDB - ensure specified database exists.
-     *
-     */
-    private void testDB() {
-        try {
-            lockConnection = getConnection(driver, url, user, password);
-            lockConnection.setAutoCommit(false);
-            statements.init(lockConnection, database);
-        } catch (Exception e) {
-            LOG.severe("Error occured while attempting to obtain connection: " + e + " " + e.getMessage());
-        } finally {
-            try {
-                lockConnection.close();
-                lockConnection = null;
-            } catch (Exception f) {
-                LOG.severe("Error occured while cleaning up connection: " + f + " " + f.getMessage());
-            }
-        }
     }
 
     /**
@@ -110,17 +83,14 @@ public class MySQLJDBCLock implements Lock {
     private boolean setUpdateCursor() throws Exception {
         PreparedStatement statement = null;
         boolean result = false;
-        try { 
-            if ((lockConnection == null) || (lockConnection.isClosed())) { 
-                LOG.fine("DefaultJDBCLock#setUpdateCursor:: connection: " + url + "/" + database );
-                lockConnection = getConnection(driver, url + "/" + database, user, password);
+        try {
+            if ((lockConnection == null) || (lockConnection.isClosed())) {
+                lockConnection = getConnection(driver, url, user, password);
                 lockConnection.setAutoCommit(false);
                 statements.init(lockConnection);
-            } else {
-                LOG.fine("MySQLJDBCLock#setUpdateCursor:: connection already established.");
-                return true; 
             }
-            String sql = "LOCK TABLES " + database + "." + table + " WRITE";
+            //statements.init(lockConnection);
+            String sql = statements.setUpdateCursor();
             statement = lockConnection.prepareStatement(sql);
             result = statement.execute();
         } catch (Exception e) {
@@ -136,12 +106,12 @@ public class MySQLJDBCLock implements Lock {
                 statement = null;
             }
         }
-        LOG.info("Connected to data source: " + url + " With RS: " + result);
+        LOG.info("Connected to data source: " + url);
         return result;
     }
 
     /**
-     * lock - a KeepAlive function to maintain lock. 
+     * lock - a KeepAlive function to maintain lock.
      *
      * @return true if connection lock retained, false otherwise.
      */
@@ -153,11 +123,9 @@ public class MySQLJDBCLock implements Lock {
                 LOG.severe("Could not set DB update cursor");
                 return result;
             }
-            LOG.fine("MySQLJDBCLock#lock:: have set Update Cursor, now do update");
             long time = System.currentTimeMillis();
             statement = lockConnection.prepareStatement(statements.getLockUpdateStatement(time));
             int rows = statement.executeUpdate();
-            LOG.fine("MySQLJDBCLock#lock:: Number of update rows: " + rows);
             if (rows >= 1) {
                 result=true;
             }
@@ -190,13 +158,13 @@ public class MySQLJDBCLock implements Lock {
      * isAlive - test if lock still exists.
      */
     public boolean isAlive() throws Exception {
-        if ((lockConnection == null) || (lockConnection.isClosed())) { 
+        if ((lockConnection == null) || (lockConnection.isClosed())) {
             LOG.severe("Lost lock!");
-            return false; 
+            return false;
         }
         PreparedStatement statement = null;
         boolean result = true;
-        try { 
+        try {
             long time = System.currentTimeMillis();
             statement = lockConnection.prepareStatement(statements.getLockUpdateStatement(time));
             int rows = statement.executeUpdate();
@@ -228,15 +196,19 @@ public class MySQLJDBCLock implements Lock {
      * @param password, password for specified user.
      * @return connection, null returned if conenction fails.
      */
-    private Connection getConnection(String driver, String url, 
+    private Connection getConnection(String driver, String url,
                                      String username, String password) throws Exception {
         Connection conn = null;
         try {
             Class.forName(driver);
-            conn = DriverManager.getConnection(url, username, password);
+            if (url.startsWith("jdbc:derby:")) {
+                conn = DriverManager.getConnection(url + ";create=true", username, password);
+            } else {
+                conn = DriverManager.getConnection(url, username, password);
+            }
         } catch (Exception e) {
             LOG.severe("Error occured while setting up JDBC connection: " + e);
-            throw e; 
+            throw e;
         }
         return conn;
     }

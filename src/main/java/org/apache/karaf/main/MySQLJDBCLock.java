@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.felix.karaf.main;
+package org.apache.karaf.main;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -32,9 +32,9 @@ import java.util.logging.Logger;
  * 
  * @version $Revision: $
  */
-public class OracleJDBCLock implements Lock {
+public class MySQLJDBCLock implements Lock {
 
-    private static final Logger LOG = Logger.getLogger(OracleJDBCLock.class.getName());
+    private static final Logger LOG = Logger.getLogger(MySQLJDBCLock.class.getName());
     private static final String PROPERTY_LOCK_URL               = "karaf.lock.jdbc.url";
     private static final String PROPERTY_LOCK_JDBC_DRIVER       = "karaf.lock.jdbc.driver";
     private static final String PROPERTY_LOCK_JDBC_USER         = "karaf.lock.jdbc.user";
@@ -54,7 +54,7 @@ public class OracleJDBCLock implements Lock {
     private String clusterName;
     private int timeout;
 
-    public OracleJDBCLock(Properties props) {
+    public MySQLJDBCLock(Properties props) {
         LOG.addHandler(BootstrapLogManager.getDefaultHandler());
         this.url = props.getProperty(PROPERTY_LOCK_URL);
         this.driver = props.getProperty(PROPERTY_LOCK_JDBC_DRIVER);
@@ -74,14 +74,10 @@ public class OracleJDBCLock implements Lock {
         if (user == null) { user = ""; }
         if (password == null) { password = ""; }
 
-        int db = props.getProperty(PROPERTY_LOCK_URL).lastIndexOf(":");
-        this.url = props.getProperty(PROPERTY_LOCK_URL);
+        int db = props.getProperty(PROPERTY_LOCK_URL).lastIndexOf("/");
+        this.url = props.getProperty(PROPERTY_LOCK_URL).substring(0, db);
         this.database = props.getProperty(PROPERTY_LOCK_URL).substring(db +1);
         this.statements = new Statements(database, table, clusterName);
-        statements.setDBCreateStatement("create database " + database);
-        statements.setCreateStatement("create table " + table + " (MOMENT number(20), NODE varchar2(20))");
-        statements.setPopulateStatement("insert into " + table + " (MOMENT, NODE) values ('1', '" + clusterName + "')");
-        statements.setColumnNames("MOMENT", "NODE");
         testDB();
     }
 
@@ -93,7 +89,7 @@ public class OracleJDBCLock implements Lock {
         try {
             lockConnection = getConnection(driver, url, user, password);
             lockConnection.setAutoCommit(false);
-            statements.init(lockConnection);
+            statements.init(lockConnection, database);
         } catch (Exception e) {
             LOG.severe("Error occured while attempting to obtain connection: " + e + " " + e.getMessage());
         } finally {
@@ -116,15 +112,15 @@ public class OracleJDBCLock implements Lock {
         boolean result = false;
         try { 
             if ((lockConnection == null) || (lockConnection.isClosed())) { 
-                LOG.fine("OracleJDBCLock#setUpdateCursor:: connection: " + url);
-                lockConnection = getConnection(driver, url, user, password);
+                LOG.fine("DefaultJDBCLock#setUpdateCursor:: connection: " + url + "/" + database );
+                lockConnection = getConnection(driver, url + "/" + database, user, password);
                 lockConnection.setAutoCommit(false);
                 statements.init(lockConnection);
             } else {
-                LOG.fine("OracleJDBCLock#setUpdateCursor:: connection already established.");
+                LOG.fine("MySQLJDBCLock#setUpdateCursor:: connection already established.");
                 return true; 
             }
-            String sql = "SELECT * FROM " + table + " FOR UPDATE";
+            String sql = "LOCK TABLES " + database + "." + table + " WRITE";
             statement = lockConnection.prepareStatement(sql);
             result = statement.execute();
         } catch (Exception e) {
@@ -140,7 +136,7 @@ public class OracleJDBCLock implements Lock {
                 statement = null;
             }
         }
-        LOG.fine("Connected to data source: " + url + " With RS: " + result);
+        LOG.info("Connected to data source: " + url + " With RS: " + result);
         return result;
     }
 
@@ -157,11 +153,11 @@ public class OracleJDBCLock implements Lock {
                 LOG.severe("Could not set DB update cursor");
                 return result;
             }
-            LOG.fine("OracleJDBCLock#lock:: have set Update Cursor, now do update");
+            LOG.fine("MySQLJDBCLock#lock:: have set Update Cursor, now do update");
             long time = System.currentTimeMillis();
             statement = lockConnection.prepareStatement(statements.getLockUpdateStatement(time));
             int rows = statement.executeUpdate();
-            LOG.fine("OracleJDBCLock#lock:: Number of update rows: " + rows);
+            LOG.fine("MySQLJDBCLock#lock:: Number of update rows: " + rows);
             if (rows >= 1) {
                 result=true;
             }

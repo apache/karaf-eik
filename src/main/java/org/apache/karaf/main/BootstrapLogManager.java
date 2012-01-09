@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.felix.karaf.main;
+package org.apache.karaf.main;
 
-import info.evanchik.karaf.app.PropertyUtils;
+import org.apache.karaf.eik.app.PropertyUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -42,7 +42,10 @@ public class BootstrapLogManager {
 
     private static Properties configProps;
 
-    public static Handler getDefaultHandler () {
+    public static synchronized Handler getDefaultHandler () {
+        if (handler != null) {
+            return handler;
+        }
         String filename;
         File log;
         Properties props = new Properties();
@@ -54,10 +57,10 @@ public class BootstrapLogManager {
             // Make a best effort to log to the default file appender configured for log4j
             FileInputStream fis = null;
             try {
-                fis = new FileInputStream("../etc/org.ops4j.pax.logging.cfg");
+                fis = new FileInputStream(System.getProperty("karaf.base") + "../etc/org.ops4j.pax.logging.cfg");
                 props.load(fis);
             } catch (IOException e) {
-                props.setProperty("log4j.appender.out.file", "${karaf.base}/data/log/karaf.log");
+                props.setProperty("log4j.appender.out.file", "${karaf.data}/log/karaf.log");
             } finally {
                 if (fis != null) {
                     try {
@@ -67,10 +70,15 @@ public class BootstrapLogManager {
                     }
                 }
             }
+
+            if (props.getProperty("log4j.appender.out.file") == null) {
+                // manage if the log4j.appender.out.file property is not present in
+                // the etc/org.ops4j.pax.logging.cfg file
+                props.setProperty("log4j.appender.out.file", "${karaf.data}/log/karaf.log");
+            }
             filename = PropertyUtils.substVars(props.getProperty("log4j.appender.out.file"),"log4j.appender.out.file", null, null);
             log = new File(filename);
         }
-
 
         try {
             handler = new BootstrapLogManager.SimpleFileHandler(log);
@@ -84,7 +92,6 @@ public class BootstrapLogManager {
     public static void setProperties(Properties configProps) {
         BootstrapLogManager.configProps = configProps;
     }
-
 
     /**
      * Implementation of java.util.logging.Handler that does simple appending
@@ -119,6 +126,5 @@ public class BootstrapLogManager {
             flush();
         }
     }
-
 
 }

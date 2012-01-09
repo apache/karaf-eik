@@ -16,14 +16,47 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.felix.karaf.main;
+package org.apache.karaf.eik.app;
 
-public interface Lock {
+import org.eclipse.core.runtime.Plugin;
+import org.osgi.framework.BundleContext;
 
-    boolean lock() throws Exception;
+/**
+ * The activator class controls the plug-in life cycle
+ */
+public class Activator extends Plugin {
 
-    void release() throws Exception;
+	// The plug-in ID
+	public static final String PLUGIN_ID = "org.apache.karaf.eik.app";
 
-    boolean isAlive() throws Exception;
+	// The shared instance
+	private static Activator plugin;
+
+	/**
+	 * The constructor
+	 */
+	public Activator() {
+	}
+
+	@Override
+    public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+	}
+
+	@Override
+    public void stop(BundleContext context) throws Exception {
+		plugin = null;
+		super.stop(context);
+	}
+
+	/**
+	 * Returns the shared instance
+	 *
+	 * @return the shared instance
+	 */
+	public static Activator getDefault() {
+		return plugin;
+	}
 
 }

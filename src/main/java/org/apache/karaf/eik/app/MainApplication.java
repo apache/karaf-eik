@@ -1,30 +1,34 @@
-/**
- * Copyright (c) 2010 Stephen Evanchik
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Contributors:
- *  Stephen Evanchik - initial implementation
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-package info.evanchik.karaf.app;
+package org.apache.karaf.eik.app;
 
-import info.evanchik.karaf.app.internal.LockManager;
-import info.evanchik.karaf.app.internal.SystemPropertyLoader;
+import org.apache.karaf.eik.app.internal.LockManager;
+import org.apache.karaf.eik.app.internal.SystemPropertyLoader;
 
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.apache.felix.karaf.main.BootstrapLogManager;
+import org.apache.karaf.main.BootstrapLogManager;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.osgi.framework.BundleContext;
 
-/**
- * @author Stephen Evanchik (evanchsa@gmail.com)
- *
- */
 public class MainApplication implements IApplication {
 
     private static final Logger LOG = Logger.getLogger(MainApplication.class.getName());
@@ -36,7 +40,7 @@ public class MainApplication implements IApplication {
     private BundleContext bundleContext;
 
     public Object start(IApplicationContext context) throws Exception {
-        System.out.println("Apache ServiceMix Kernel :: Starting main application");
+        System.out.println("Apache Karaf :: Starting main application");
 
         this.bundleContext = Activator.getDefault().getBundle().getBundleContext();
 
@@ -58,13 +62,11 @@ public class MainApplication implements IApplication {
     }
 
     public void stop() {
-
         try {
             LockManager.getInstance().stop();
         } catch(Exception e) {
 
         }
     }
-
 
 }
