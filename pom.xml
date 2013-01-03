@@ -133,7 +133,6 @@
         </pluginManagement>
     </build>
 
-
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/karaf/eik/tags/org.apache.aries.jmx.api-1.0.0</connection>
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/karaf/eik/tags/org.apache.aries.jmx.api-1.0.0</developerConnection>
