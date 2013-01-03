@@ -126,7 +126,6 @@
         </pluginManagement>
     </build>
 
-
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/karaf/eik/tags/org.apache.commons.lang-2.6</connection>
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/karaf/eik/tags/org.apache.commons.lang-2.6</developerConnection>
