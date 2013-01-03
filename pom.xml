@@ -133,7 +133,6 @@
         </pluginManagement>
     </build>
 
-
   <scm>
     <connection>scm:svn:http://svn.apache.org/repos/asf/karaf/eik/tags/org.fusesource.jansi-1.7</connection>
     <developerConnection>scm:svn:https://svn.apache.org/repos/asf/karaf/eik/tags/org.fusesource.jansi-1.7</developerConnection>
