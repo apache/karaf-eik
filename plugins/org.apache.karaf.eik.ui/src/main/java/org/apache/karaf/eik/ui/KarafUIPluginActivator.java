@@ -18,10 +18,21 @@
  */
 package org.apache.karaf.eik.ui;
 
-import org.apache.karaf.eik.core.LogWrapper;
+import java.util.Map;
 
+import org.apache.karaf.eik.core.KarafPlatformModel;
+import org.apache.karaf.eik.core.KarafPlatformModelFactory;
+import org.apache.karaf.eik.core.KarafPlatformModelRegistry;
+import org.apache.karaf.eik.core.KarafPlatformValidator;
+import org.apache.karaf.eik.core.LogWrapper;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.pde.core.plugin.IPluginModelBase;
+import org.eclipse.pde.core.plugin.PluginRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -32,17 +43,17 @@ import org.osgi.framework.ServiceReference;
 public class KarafUIPluginActivator extends AbstractUIPlugin {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "org.apache.karaf.eik.ui";
+    public static final String PLUGIN_ID = "org.apache.karaf.eik.ui"; //$NON-NLS-1$
 
-    public static final String BUNDLE_OBJ_IMG = "bundle_obj";
+    public static final String BUNDLE_OBJ_IMG = "bundle_obj"; //$NON-NLS-1$
 
-    public static final String FEATURE_OBJ_IBM = "feature_obj";
+    public static final String FEATURE_OBJ_IBM = "feature_obj"; //$NON-NLS-1$
 
-    public static final String LOGO_16X16_IMG = "logo16";
+    public static final String LOGO_16X16_IMG = "logo16"; //$NON-NLS-1$
 
-    public static final String LOGO_32X32_IMG = "logo32";
+    public static final String LOGO_32X32_IMG = "logo32"; //$NON-NLS-1$
 
-    public static final String LOGO_64X64_IMG = "logo64";
+    public static final String LOGO_64X64_IMG = "logo64"; //$NON-NLS-1$
 
     // The shared instance
     private static KarafUIPluginActivator plugin;
@@ -67,6 +78,43 @@ public class KarafUIPluginActivator extends AbstractUIPlugin {
     public static LogWrapper getLogger() {
         return new LogWrapper(getDefault().getLog(), PLUGIN_ID);
     }
+
+    /**
+     *
+     * @return
+     * @throws CoreException
+     */
+   public static KarafPlatformModel findActivePlatformModel() throws CoreException {
+       final Map<String, IConfigurationElement> triggerBundleMap =
+           KarafPlatformModelRegistry.getTriggerBundlePlatformFactoryMap();
+
+       for (final Map.Entry<String, IConfigurationElement> e : triggerBundleMap.entrySet()) {
+           final String symbolicName = e.getKey();
+
+           final IPluginModelBase karafPlatformPlugin = PluginRegistry.findModel(symbolicName);
+
+           if (karafPlatformPlugin == null) {
+               continue;
+           }
+
+           final IConfigurationElement c = e.getValue();
+           final KarafPlatformModelFactory f =
+               (KarafPlatformModelFactory)c.createExecutableExtension(KarafPlatformModelRegistry.ATT_CLASS);
+
+           final KarafPlatformValidator validator = f.getPlatformValidator();
+
+           IPath modelPath = new Path(karafPlatformPlugin.getInstallLocation()).removeLastSegments(1);
+           while(!modelPath.isEmpty() && !modelPath.isRoot()) {
+               modelPath = modelPath.removeLastSegments(1);
+
+               if (validator.isValid(modelPath)) {
+                   return f.getPlatformModel(modelPath);
+               }
+           }
+       }
+
+       return null;
+   }
 
     /**
      * The constructor
@@ -120,13 +168,13 @@ public class KarafUIPluginActivator extends AbstractUIPlugin {
      */
     @Override
     protected void initializeImageRegistry(final ImageRegistry imageRegistry) {
-        registerImage(imageRegistry, BUNDLE_OBJ_IMG, "icons/obj16/bundle_obj.gif");
-        registerImage(imageRegistry, FEATURE_OBJ_IBM, "icons/obj16/feature_obj.gif");
-        registerImage(imageRegistry, "runtime_obj", "icons/obj16/runtime_obj.gif");
-        registerImage(imageRegistry, "details_view", "icons/obj16/details_view.gif");
-        registerImage(imageRegistry, LOGO_16X16_IMG, "icons/obj16/karaf-logo-16x16.png");
-        registerImage(imageRegistry, LOGO_32X32_IMG, "icons/obj32/karaf-logo-32x32.png");
-        registerImage(imageRegistry, LOGO_64X64_IMG, "icons/obj64/karaf-logo-64x64.png");
+        registerImage(imageRegistry, BUNDLE_OBJ_IMG, "icons/obj16/bundle_obj.gif"); //$NON-NLS-1$
+        registerImage(imageRegistry, FEATURE_OBJ_IBM, "icons/obj16/feature_obj.gif"); //$NON-NLS-1$
+        registerImage(imageRegistry, "runtime_obj", "icons/obj16/runtime_obj.gif"); //$NON-NLS-1$ $NON-NLS-2$
+        registerImage(imageRegistry, "details_view", "icons/obj16/details_view.gif"); //$NON-NLS-1$ $NON-NLS-2$
+        registerImage(imageRegistry, LOGO_16X16_IMG, "icons/obj16/karaf-logo-16x16.png"); //$NON-NLS-1$
+        registerImage(imageRegistry, LOGO_32X32_IMG, "icons/obj32/karaf-logo-32x32.png"); //$NON-NLS-1$
+        registerImage(imageRegistry, LOGO_64X64_IMG, "icons/obj64/karaf-logo-64x64.png"); //$NON-NLS-1$
     }
 
     /**

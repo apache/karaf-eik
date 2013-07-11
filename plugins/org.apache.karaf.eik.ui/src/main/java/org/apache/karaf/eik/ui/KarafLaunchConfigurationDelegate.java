@@ -18,18 +18,6 @@
  */
 package org.apache.karaf.eik.ui;
 
-import org.apache.karaf.eik.core.IKarafConstants;
-import org.apache.karaf.eik.core.KarafCorePluginUtils;
-import org.apache.karaf.eik.core.KarafPlatformModel;
-import org.apache.karaf.eik.core.KarafPlatformModelRegistry;
-import org.apache.karaf.eik.core.KarafWorkingPlatformModel;
-import org.apache.karaf.eik.core.PropertyUtils;
-import org.apache.karaf.eik.core.SystemBundleNames;
-import org.apache.karaf.eik.core.equinox.BundleEntry;
-import org.apache.karaf.eik.core.model.WorkingKarafPlatformModel;
-import org.apache.karaf.eik.ui.internal.WorkbenchServiceExtensions;
-import org.apache.karaf.eik.ui.workbench.KarafWorkbenchServiceFactory;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.karaf.eik.core.IKarafConstants;
+import org.apache.karaf.eik.core.KarafCorePluginUtils;
+import org.apache.karaf.eik.core.KarafPlatformModel;
+import org.apache.karaf.eik.core.KarafWorkingPlatformModel;
+import org.apache.karaf.eik.core.PropertyUtils;
+import org.apache.karaf.eik.core.SystemBundleNames;
+import org.apache.karaf.eik.core.equinox.BundleEntry;
+import org.apache.karaf.eik.core.model.WorkingKarafPlatformModel;
+import org.apache.karaf.eik.ui.internal.WorkbenchServiceExtensions;
+import org.apache.karaf.eik.ui.workbench.KarafWorkbenchServiceFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -257,7 +255,7 @@ public class KarafLaunchConfigurationDelegate extends EquinoxLaunchConfiguration
     protected void preLaunchCheck(final ILaunchConfiguration configuration, final ILaunch launch, final IProgressMonitor monitor) throws CoreException {
         super.preLaunchCheck(configuration, launch, monitor);
 
-        this.karafPlatform = KarafPlatformModelRegistry.findActivePlatformModel();
+        this.karafPlatform = KarafUIPluginActivator.findActivePlatformModel();
 
         monitor.worked(10);
 
@@ -476,7 +474,6 @@ public class KarafLaunchConfigurationDelegate extends EquinoxLaunchConfiguration
 
         final IVMInstall3 vmInstall3 = (IVMInstall3) vmInstall;
 
-        @SuppressWarnings("unchecked")
         final Map<String, String> properties =
             vmInstall3.evaluateSystemProperties(new String[] { JAVA_SPECIFICATION_VERSION }, new NullProgressMonitor());
 

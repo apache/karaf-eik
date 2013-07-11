@@ -18,6 +18,10 @@
  */
 package org.apache.karaf.eik.ui;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.karaf.eik.core.IKarafConstants;
 import org.apache.karaf.eik.core.KarafCorePluginUtils;
 import org.apache.karaf.eik.core.KarafPlatformModel;
@@ -29,11 +33,6 @@ import org.apache.karaf.eik.core.equinox.BundleEntry;
 import org.apache.karaf.eik.core.model.WorkingKarafPlatformModel;
 import org.apache.karaf.eik.ui.internal.WorkbenchServiceExtensions;
 import org.apache.karaf.eik.ui.workbench.KarafWorkbenchServiceFactory;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -76,7 +75,10 @@ public class KarafLaunchConfigurationInitializer extends OSGiLaunchConfiguration
 
     @Override
     public void initialize(final ILaunchConfigurationWorkingCopy configuration) {
-        loadKarafPlatform(configuration);
+        if (!loadKarafPlatform(configuration)) {
+            // Do nothing
+            return;
+        }
 
         final File configDir =
             LaunchConfigurationHelper.getConfigurationArea(configuration);
@@ -211,18 +213,28 @@ public class KarafLaunchConfigurationInitializer extends OSGiLaunchConfiguration
      *
      * @param configuration
      */
-    protected void loadKarafPlatform(final ILaunchConfigurationWorkingCopy configuration) {
+    protected boolean loadKarafPlatform(final ILaunchConfigurationWorkingCopy configuration) {
         try {
-            this.karafPlatform = KarafPlatformModelRegistry.findActivePlatformModel();
+            this.karafPlatform = KarafUIPluginActivator.findActivePlatformModel();
+            if (this.karafPlatform == null) {
+                KarafUIPluginActivator.getLogger().warn("Unable to locate the Karaf platform");
+
+                return false;
+            }
+
             this.karafPlatformFactory = KarafPlatformModelRegistry.findPlatformModelFactory(karafPlatform.getRootDirectory());
 
             this.startupSection = (StartupSection) this.karafPlatform.getAdapter(StartupSection.class);
             this.startupSection.load();
+
+            return true;
         } catch (final CoreException e) {
             KarafUIPluginActivator.getLogger().error("Unable to locate the Karaf platform", e);
 
             this.karafPlatform = null;
         }
+
+        return false;
     }
 
     /**
@@ -271,5 +283,4 @@ public class KarafLaunchConfigurationInitializer extends OSGiLaunchConfiguration
 
         configuration.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, vmArgs.toString());
     }
-
 }

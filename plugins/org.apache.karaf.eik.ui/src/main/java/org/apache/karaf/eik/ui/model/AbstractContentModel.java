@@ -20,7 +20,6 @@ package org.apache.karaf.eik.ui.model;
 
 import org.apache.karaf.eik.core.KarafPlatformModel;
 import org.apache.karaf.eik.ui.IKarafProject;
-
 import org.eclipse.core.runtime.PlatformObject;
 
 public abstract class AbstractContentModel extends PlatformObject implements ContentModel {

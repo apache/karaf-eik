@@ -18,17 +18,6 @@
  */
 package org.apache.karaf.eik.ui.project;
 
-import org.apache.karaf.eik.core.KarafCorePluginUtils;
-import org.apache.karaf.eik.core.KarafPlatformModel;
-import org.apache.karaf.eik.core.PropertyUtils;
-import org.apache.karaf.eik.core.configuration.FeaturesSection;
-import org.apache.karaf.eik.core.features.FeaturesRepository;
-import org.apache.karaf.eik.ui.IKarafProject;
-import org.apache.karaf.eik.ui.KarafUIPluginActivator;
-import org.apache.karaf.eik.ui.features.FeaturesResolverJob;
-import org.apache.karaf.eik.ui.internal.KarafLaunchUtils;
-import org.apache.karaf.eik.ui.internal.PopulateObrFileJob;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,6 +33,16 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
+import org.apache.karaf.eik.core.KarafCorePluginUtils;
+import org.apache.karaf.eik.core.KarafPlatformModel;
+import org.apache.karaf.eik.core.PropertyUtils;
+import org.apache.karaf.eik.core.configuration.FeaturesSection;
+import org.apache.karaf.eik.core.features.FeaturesRepository;
+import org.apache.karaf.eik.ui.IKarafProject;
+import org.apache.karaf.eik.ui.KarafUIPluginActivator;
+import org.apache.karaf.eik.ui.features.FeaturesResolverJob;
+import org.apache.karaf.eik.ui.internal.KarafLaunchUtils;
+import org.apache.karaf.eik.ui.internal.PopulateObrFileJob;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -57,10 +56,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.pde.internal.core.target.provisional.IBundleContainer;
-import org.eclipse.pde.internal.core.target.provisional.ITargetDefinition;
-import org.eclipse.pde.internal.core.target.provisional.ITargetHandle;
-import org.eclipse.pde.internal.core.target.provisional.ITargetPlatformService;
+import org.eclipse.pde.core.target.ITargetDefinition;
+import org.eclipse.pde.core.target.ITargetHandle;
+import org.eclipse.pde.core.target.ITargetLocation;
+import org.eclipse.pde.core.target.ITargetPlatformService;
 
 public class KarafProjectBuilder extends IncrementalProjectBuilder {
 
@@ -69,10 +68,18 @@ public class KarafProjectBuilder extends IncrementalProjectBuilder {
     public KarafProjectBuilder() { }
 
     @Override
-    protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") final Map args, final IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(final int kind, @SuppressWarnings("rawtypes") final Map args, final IProgressMonitor monitor)
+        throws CoreException
+    {
         final IProject project = getProject();
 
-        monitor.beginTask("Building Apache Karaf project: " + project.getName(), 1);
+        // Sentry to prevent builders from running
+        if (getKarafProject() == null) {
+        	// TODO: This should issue a warning in the Error Log
+        	return null;
+        }
+
+        monitor.beginTask("Building Apache Karaf Project: " + project.getName(), 1);
 
         try {
             if (kind == IncrementalProjectBuilder.FULL_BUILD) {
@@ -327,7 +334,6 @@ public class KarafProjectBuilder extends IncrementalProjectBuilder {
         return getKarafProject().getProjectHandle().getFile(targetFilename);
     }
 
-    @SuppressWarnings("restriction")
     private void createTargetPlatform(final IProgressMonitor monitor) throws CoreException {
         final ITargetPlatformService targetPlatformService = (ITargetPlatformService) KarafUIPluginActivator.getDefault().getService(ITargetPlatformService.class.getName());
 
@@ -338,8 +344,8 @@ public class KarafProjectBuilder extends IncrementalProjectBuilder {
 
         target.setName(getKarafProject().getName());
 
-        final List<IBundleContainer> bundleContainers = KarafLaunchUtils.getBundleContainers(getKarafPlatformModel());
-        target.setBundleContainers(bundleContainers.toArray(new IBundleContainer[0]));
+        final List<ITargetLocation> bundleContainers = KarafLaunchUtils.getBundleContainers(getKarafPlatformModel());
+        target.setTargetLocations(bundleContainers.toArray(new ITargetLocation[0]));
 
         targetPlatformService.saveTargetDefinition(target);
     }

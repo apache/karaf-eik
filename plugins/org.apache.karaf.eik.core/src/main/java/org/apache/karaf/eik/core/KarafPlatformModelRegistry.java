@@ -18,68 +18,27 @@
  */
 package org.apache.karaf.eik.core;
 
-import org.apache.karaf.eik.core.internal.KarafCorePluginActivator;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.karaf.eik.core.internal.KarafCorePluginActivator;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.pde.core.plugin.IPluginModelBase;
-import org.eclipse.pde.core.plugin.PluginRegistry;
 
 public final class KarafPlatformModelRegistry {
 
-    private static final String ATT_CLASS = "class";
+    public static final String ATT_CLASS = "class";
 
     private static final String TAG_PLATFORM_MODEL_ITEMTYPE = "model";
 
     private static final String ATT_SYMBOLIC_NAME = "symbolicName";
 
     private static final String TAG_TRIGGER_BUNDLE_ITEMTYPE = "triggerBundle";
-
-    /**
-     *
-     * @return
-     * @throws CoreException
-     */
-    public static KarafPlatformModel findActivePlatformModel() throws CoreException {
-        final Map<String, IConfigurationElement> triggerBundleMap =
-            getTriggerBundlePlatformFactoryMap();
-
-        for (Map.Entry<String, IConfigurationElement> e : triggerBundleMap.entrySet()) {
-            final String symbolicName = e.getKey();
-
-            IPluginModelBase karafPlatformPlugin = PluginRegistry.findModel(symbolicName);
-
-            if (karafPlatformPlugin == null) {
-                continue;
-            }
-
-            final IConfigurationElement c = e.getValue();
-            final KarafPlatformModelFactory f =
-                (KarafPlatformModelFactory)c.createExecutableExtension(ATT_CLASS);
-
-            final KarafPlatformValidator validator = f.getPlatformValidator();
-
-            IPath modelPath = new Path(karafPlatformPlugin.getInstallLocation()).removeLastSegments(1);
-            while(!modelPath.isEmpty() && !modelPath.isRoot()) {
-                modelPath = modelPath.removeLastSegments(1);
-
-                if (validator.isValid(modelPath)) {
-                    return f.getPlatformModel(modelPath);
-                }
-            }
-        }
-
-        return null;
-    }
 
     /**
      *

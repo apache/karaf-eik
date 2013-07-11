@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>12</version>
+        <version>13</version>
         <relativePath />
     </parent>
 
@@ -54,14 +54,11 @@
         <module>plugins/org.apache.karaf.eik.felix</module>
         <module>plugins/org.apache.karaf.eik.hooks</module>
         <module>plugins/org.apache.karaf.eik.jmx</module>
-        <module>plugins/org.apache.karaf.eik.wtp.core</module>
-        <module>plugins/org.apache.karaf.eik.wtp.ui</module>
         <module>plugins/org.apache.karaf.eik.ui</module>
         <module>plugins/org.apache.karaf.eik.workbench</module>
 
         <!-- Features -->
         <module>features/org.apache.karaf.eik.jmx.feature</module>
-        <module>features/org.apache.karaf.eik.wtp.feature</module>
         <module>features/org.apache.karaf.eik.feature</module>
         <module>features/org.apache.karaf.eik.repository</module>
 

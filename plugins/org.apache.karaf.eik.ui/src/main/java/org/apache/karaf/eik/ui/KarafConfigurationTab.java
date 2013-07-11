@@ -18,16 +18,6 @@
  */
 package org.apache.karaf.eik.ui;
 
-import org.apache.karaf.eik.core.KarafCorePluginUtils;
-import org.apache.karaf.eik.core.KarafPlatformModel;
-import org.apache.karaf.eik.core.KarafPlatformModelRegistry;
-import org.apache.karaf.eik.core.configuration.FeaturesSection;
-import org.apache.karaf.eik.core.features.Feature;
-import org.apache.karaf.eik.core.features.FeatureResolverImpl;
-import org.apache.karaf.eik.core.features.Features;
-import org.apache.karaf.eik.core.features.FeaturesRepository;
-import org.apache.karaf.eik.core.features.XmlFeaturesRepository;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +26,14 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.karaf.eik.core.KarafCorePluginUtils;
+import org.apache.karaf.eik.core.KarafPlatformModel;
+import org.apache.karaf.eik.core.configuration.FeaturesSection;
+import org.apache.karaf.eik.core.features.Feature;
+import org.apache.karaf.eik.core.features.FeatureResolverImpl;
+import org.apache.karaf.eik.core.features.Features;
+import org.apache.karaf.eik.core.features.FeaturesRepository;
+import org.apache.karaf.eik.core.features.XmlFeaturesRepository;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -747,7 +745,7 @@ public class KarafConfigurationTab extends AbstractLaunchConfigurationTab {
     }
 
     private void initializeKarafPlatformModel() throws CoreException {
-        karafPlatformModel = KarafPlatformModelRegistry.findActivePlatformModel();
+        karafPlatformModel = KarafUIPluginActivator.findActivePlatformModel();
         if (karafPlatformModel == null) {
             throw new CoreException(new Status(IStatus.ERROR, KarafUIPluginActivator.PLUGIN_ID, "Unable to locate active Karaf Platform Model"));
         }

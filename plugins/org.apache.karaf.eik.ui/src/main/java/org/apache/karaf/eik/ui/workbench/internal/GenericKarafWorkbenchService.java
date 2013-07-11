@@ -18,6 +18,14 @@
  */
 package org.apache.karaf.eik.ui.workbench.internal;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.karaf.eik.core.IKarafConstants;
 import org.apache.karaf.eik.core.KarafCorePluginUtils;
 import org.apache.karaf.eik.core.KarafPlatformModel;
@@ -34,14 +42,6 @@ import org.apache.karaf.eik.ui.KarafLaunchConfigurationConstants;
 import org.apache.karaf.eik.ui.KarafUIPluginActivator;
 import org.apache.karaf.eik.ui.console.KarafRemoteConsole;
 import org.apache.karaf.eik.ui.workbench.KarafWorkbenchService;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -202,21 +202,11 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
 
     @Override
     public List<BundleEntry> getAdditionalBundles(final KarafWorkingPlatformModel platformModel, final ILaunchConfiguration configuration) {
-        if (!platformModel.getParentKarafModel().getClass().equals(GenericKarafPlatformModel.class)) {
+        if (!(platformModel.getParentKarafModel() instanceof GenericKarafPlatformModel)) {
             return Collections.emptyList();
         }
 
         final String[] bundles = {
-                "org.apache.karaf.eik.app",
-                "org.eclipse.core.contenttype",
-                "org.eclipse.core.jobs",
-                "org.eclipse.core.runtime",
-                "org.eclipse.core.runtime.compatibility.auth",
-                "org.eclipse.equinox.app",
-                "org.eclipse.equinox.common",
-                "org.eclipse.equinox.registry",
-                "org.eclipse.equinox.preferences",
-                "org.eclipse.osgi.util"
         };
 
         final List<BundleEntry> bundleEntries = new ArrayList<BundleEntry>();
@@ -242,22 +232,29 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
 
     @Override
     public Map<String, String> getAdditionalEquinoxConfiguration(final KarafWorkingPlatformModel platformModel, final ILaunchConfiguration configuration) {
-        if (!platformModel.getParentKarafModel().getClass().equals(GenericKarafPlatformModel.class)) {
+        if (!(platformModel.getParentKarafModel() instanceof GenericKarafPlatformModel)) {
             return Collections.emptyMap();
         }
 
         final Map<String, String> equinoxProperties = new HashMap<String, String>();
 
-        final Properties currentConfig;
         try {
-            currentConfig =
-                KarafCorePluginUtils.loadProperties(
+            final Properties currentConfig = createLaunchSystemProperties(platformModel, configuration);
+
+            final File defaultConfigFile = new File(
                     platformModel.getParentKarafModel().getConfigurationDirectory().toFile(),
                     IKarafConstants.KARAF_DEFAULT_CONFIG_PROPERTIES_FILE,
                     true);
 
-            final Properties systemProperties = createLaunchSystemProperties(platformModel, configuration);
-            currentConfig.putAll(systemProperties);
+            if (defaultConfigFile.exists()) {
+                final Properties defaultConfigProperties =
+                    KarafCorePluginUtils.loadProperties(
+                        platformModel.getParentKarafModel().getConfigurationDirectory().toFile(),
+                        IKarafConstants.KARAF_DEFAULT_CONFIG_PROPERTIES_FILE,
+                        true);
+
+                currentConfig.putAll(defaultConfigProperties);
+            }
 
             PropertyUtils.interpolateVariables(currentConfig, currentConfig);
 
@@ -295,7 +292,7 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
             final ILaunchConfiguration configuration)
         throws CoreException
     {
-        if (!platformModel.getParentKarafModel().getClass().equals(GenericKarafPlatformModel.class)) {
+        if (!(platformModel.getParentKarafModel() instanceof GenericKarafPlatformModel)) {
             return Collections.emptyList();
         }
 
@@ -314,7 +311,7 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
 
     @Override
     public void initialize(final KarafWorkingPlatformModel platformModel, final ILaunchConfigurationWorkingCopy configuration) {
-        if (!platformModel.getParentKarafModel().getClass().equals(GenericKarafPlatformModel.class)) {
+        if (!(platformModel.getParentKarafModel() instanceof GenericKarafPlatformModel)) {
             return;
         }
 
@@ -323,11 +320,11 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
                 platformModel.getParentKarafModel().getRootDirectory().toString());
 
         final StringBuffer vmArgs = new StringBuffer();
-        if (vmArgs.indexOf("-Declipse.application") == -1) { //$NON-NLS-1$
+        if (vmArgs.indexOf("-Declipse.ignoreApp") == -1) { //$NON-NLS-1$
             if (vmArgs.length() > 0) {
                 vmArgs.append(" "); //$NON-NLS-1$
             }
-            vmArgs.append(" -Declipse.application=org.apache.karaf.eik.app.KarafMain"); //$NON-NLS-1$
+            vmArgs.append(" -Declipse.ignoreApp=true"); //$NON-NLS-1$
         }
 
         try {
@@ -351,7 +348,7 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
             final ILaunch launch,
             final IProgressMonitor monitor) throws CoreException
     {
-        if (!platformModel.getParentKarafModel().getClass().equals(GenericKarafPlatformModel.class)) {
+        if (!(platformModel.getParentKarafModel() instanceof GenericKarafPlatformModel)) {
             return;
         }
 
@@ -368,7 +365,7 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
         final IPath path = file.getRawLocation();
 
         final String obr = equinoxProperties.get(IKarafConstants.KARAF_OBR_REPOSITORY_PROP);
-        if (obr.indexOf("eclipse.obr.xml") == -1) {
+        if (obr != null && obr.indexOf("eclipse.obr.xml") == -1) {
             final String obrUrls;
             if (obr.trim().length() > 1) {
                 obrUrls = obr + "," + "file://" + path.toFile().getAbsolutePath();

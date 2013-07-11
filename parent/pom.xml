@@ -35,11 +35,11 @@
     <name>Apache Karaf :: EIK :: Parent</name>
 
     <properties>
-        <platform-version-name>helios</platform-version-name>
+        <platform-version-name>juno</platform-version-name>
+        <swtbot.platform-version-name>helios</swtbot.platform-version-name>
         <eclipse-site>http://download.eclipse.org/releases/${platform-version-name}</eclipse-site>
         <wikitext-site>http://download.eclipse.org/tools/mylyn/update/weekly</wikitext-site>
-        <swtbot-site>http://download.eclipse.org/technology/swtbot/${platform-version-name}/dev-build/update-site
-        </swtbot-site>
+        <swtbot-site>http://download.eclipse.org/technology/swtbot/${swtbot.platform-version-name}/dev-build/update-site</swtbot-site>
         <orbit-site>http://download.eclipse.org/tools/orbit/downloads/drops/R20110523182458/repository</orbit-site>
         <tycho-version>0.13.0</tycho-version>
         <aries.jmx.version>1.0.0</aries.jmx.version>
