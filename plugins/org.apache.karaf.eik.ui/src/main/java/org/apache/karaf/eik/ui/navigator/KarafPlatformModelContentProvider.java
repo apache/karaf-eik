@@ -22,6 +22,8 @@ import org.apache.karaf.eik.ui.IKarafProject;
 import org.apache.karaf.eik.ui.model.AbstractContentModel;
 import org.apache.karaf.eik.ui.model.BootClasspath;
 import org.apache.karaf.eik.ui.model.ContentModel;
+import org.apache.karaf.eik.ui.model.SystemBundles;
+import org.apache.karaf.eik.ui.model.UserBundles;
 import org.apache.karaf.eik.ui.project.KarafProject;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ITreeContentProvider;

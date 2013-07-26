@@ -243,8 +243,7 @@ public class GenericKarafWorkbenchService implements KarafWorkbenchService {
 
             final File defaultConfigFile = new File(
                     platformModel.getParentKarafModel().getConfigurationDirectory().toFile(),
-                    IKarafConstants.KARAF_DEFAULT_CONFIG_PROPERTIES_FILE,
-                    true);
+                    IKarafConstants.KARAF_DEFAULT_CONFIG_PROPERTIES_FILE);
 
             if (defaultConfigFile.exists()) {
                 final Properties defaultConfigProperties =
