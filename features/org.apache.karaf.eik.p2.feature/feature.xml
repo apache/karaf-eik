@@ -2,7 +2,7 @@
 <feature
         id="org.apache.karaf.eik.p2.feature"
         label="Eclipse p2 Integeration for Apache Karaf"
-        version="3.0.0"
+        version="2.3.1"
         provider-name="Apache Software Foundation">
 
     <copyright>
