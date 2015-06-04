@@ -1,0 +1,4 @@
+image::../images/karaf-logo.png[]
+= Eclipse Integration Karaf Developer Guide
+* link:/developers-guide/prerequisites.adoc[Prerequisites]
+* link:/developers-guide/example.adoc[How to modify code]

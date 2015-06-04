@@ -1,0 +1,12 @@
+image::karaf-logo.png[]
+
+= Eclipse Integration Karaf User Guide
+* link:/user-guide/prerequisites.adoc[Prerequisites ]
+* link:/user-guide/supportedversions.adoc[Supported versions]
+* link:/user-guide/installation.adoc[Installation ]
+* link:/user-guide/createproject.adoc[Create EIK Project ]
+* link:/user-guide/launchconf.adoc[Create Launch configuration ]
+* link:/user-guide/loadbundle.adoc[View loaded bundle ]
+* link:/user-guide/uninstall.adoc[Uninstalling ]
+* link:/user-guide/devcomponent.adoc[Developing OSGi components]
+* link:/user-guide/devcomponentwithm2e.adoc[Developing OSGi components with m2e]

@@ -1,0 +1,55 @@
+
+= How to modify code
+
+With this example we want to show how to modify EIK.
+To do this we start by an example, we try to solve together a issue https://issues.apache.org/jira/browse/KARAF-1855.
+
+== Prerequisites
+
+For import eik project in eclipse without error we need follow the following point
+
+*Environment:*
+
+* Java SE Development Kit 1.6.x or greater (http://www.oracle.com/technetwork/java/javase/).
+* Apache Maven 3.0.3 (http://maven.apache.org/download.html).
+* Eclipse IDE Eclipse for RCP and RAP Developers (http://www.eclipse.org/downloads/packages/release/indigo/sr2).
+* Apache KARAF 2.2.x or 2.3.x (http://karaf.apache.org/index/community/download.html);
+* m2e(clipse) plugins (http://eclipse.org/m2e/)
+* Tycho Project Configurators it is downloaded automatically when inport EIK in eclipse with m2e version 0.6.0 or higher
+* WST server tools download from *Install Manager* version 3.2.100.v20110303-51EoAkF77g8HBSc or higher
+* JST Enterprise Core from *Install Manager*    3.3.0.v201102200555 or higher
+* JST Enterprise User Documentation from *Install Manager*  version  3.3.100.v201105122000-62FUGBgJ9EA9aEeHRHc or higher
+* JST Server Adapters   from *Install Manager* version 3.3.0.v201102200555 or higher
+* JST Server UI from *Install Manager* version 3.3.0.v201102200555 or higher
+* JST Server User Documentation from *Install Manager* version  3.3.100.v20110303-2-Eo7w3121162A3329 or higher
+* JST Web Core from *Install Manager*   version 3.3.0.v201103310009 or higher
+* JST Web User Documentation from *Install Manager* version 3.3.0.v201102200555-2107w31211938 or higher
+
+
+== Import EIK in eclipse
+
+From File > Import > Maven > Existing Maven Projects
+
+image::devexample_1.png[]
+
+After the development environment is ready, the class to change for resolve the issue is *NewKarafProjectWizard*.
+Goal is to advise user that the project has been created successfully and close the wizard.
+
+For do that I added a messageDialog as outlined in the code:
+
+image::devexample_4.png[]
+
+To see if the change has its effect select
+*Right click on org.apache.karaf.eik.ui  > Debug As > EclipseApplication*
+
+Create a new project as see in link:../user-guide/installation.html.adoc[installation]
+
+image::devexample_5.png[]
+
+Click Finish and message and wizard will be closed.
+
+image::devexample_6.png[]
+
+This minor change doesn't resolve the issue, but it illustrates how to test our changes on the code.
+
+

@@ -1,0 +1,5 @@
+
+= EIK Manual Installation
+
+This chapter describes how to install EIK from source code.
+
