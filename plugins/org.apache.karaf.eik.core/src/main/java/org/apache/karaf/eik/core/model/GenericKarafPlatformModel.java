@@ -99,6 +99,7 @@ public class GenericKarafPlatformModel extends AbstractKarafPlatformModel implem
     public List<String> getBootClasspath() {
         final List<File> jarFiles = new ArrayList<File>();
         KarafCorePluginUtils.getJarFileList(rootPlatformPath.append("lib").toFile(), jarFiles, 0);
+        KarafCorePluginUtils.getJarFileList(rootPlatformPath.append("lib").append("boot").toFile(), jarFiles, 0);
 
         final List<String> bootClasspath = new ArrayList<String>();
         for(final File f : jarFiles) {

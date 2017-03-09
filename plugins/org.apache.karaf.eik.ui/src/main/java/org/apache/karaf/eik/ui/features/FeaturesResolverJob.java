@@ -113,9 +113,12 @@ public final class FeaturesResolverJob extends Job {
                     final Properties runtimeProperties = karafProject.getRuntimeProperties();
 
                     PropertyUtils.interpolateVariables(mvnConfiguration, runtimeProperties);
-
-                    final String defaultRepos = (String) mvnConfiguration.get("org.ops4j.pax.url.mvn.defaultRepositories");
-                    final String repos = (String) mvnConfiguration.get("org.ops4j.pax.url.mvn.repositories");
+                    
+                    // Remove whitespaces in lists as these lead to errors in OPS4j
+                    final String defaultRepos = ((String) mvnConfiguration.get("org.ops4j.pax.url.mvn.defaultRepositories")); //.replaceAll("\\s+", "");
+                    mvnConfiguration.setProperty("org.ops4j.pax.url.mvn.defaultRepositories", defaultRepos);
+                    final String repos = ((String) mvnConfiguration.get("org.ops4j.pax.url.mvn.repositories")); //.replaceAll("\\s+", "");
+                    mvnConfiguration.setProperty("org.ops4j.pax.url.mvn.repositories", repos);
 
                     // In karaf-3.0.0, default repo may be null.
                     // First check if it's null an if not then add it to repo list

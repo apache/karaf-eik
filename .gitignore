@@ -3,3 +3,5 @@ target
 *.i??
 .classpath
 .project
+.settings
+*.jar

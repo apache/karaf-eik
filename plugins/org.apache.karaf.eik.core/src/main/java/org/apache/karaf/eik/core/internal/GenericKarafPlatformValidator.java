@@ -18,6 +18,10 @@
  */
 package org.apache.karaf.eik.core.internal;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.nio.file.Paths;
+
 import org.apache.karaf.eik.core.KarafPlatformValidator;
 
 import org.eclipse.core.runtime.IPath;
@@ -26,13 +30,23 @@ public class GenericKarafPlatformValidator implements KarafPlatformValidator {
 
     public boolean isValid(IPath rootPath) {
         final IPath karafJar = rootPath.append("/lib/karaf.jar");
+        final IPath bootDir = rootPath.append("/lib/boot");
 
         final IPath systemDir = rootPath.append("/system");
         final IPath confDir = rootPath.append("/etc");
 
         // First level is the Karaf JARs in the lib directory
-        if (karafJar.toFile().exists()) {
-            return true;
+        if (karafJar.toFile().exists()) { // karaf 3.X
+        	return true; 
+        }
+        if (bootDir.toFile().isDirectory()) { // karaf 4.X
+        	String[] karafLibs = bootDir.toFile().list(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.startsWith("org.apache.karaf.main");
+				}
+			});
+            return karafLibs.length > 0; 
         }
 
         /*
@@ -40,7 +54,7 @@ public class GenericKarafPlatformValidator implements KarafPlatformValidator {
          * configuration files.
          */
         if(systemDir.toFile().isDirectory() && confDir.toFile().isDirectory()) {
-            final IPath karafFeatures = confDir.append("/org.apache.felix.karaf.features.cfg");
+            final IPath karafFeatures = confDir.append("/org.apache.karaf.features.cfg");
 
             if(karafFeatures.toFile().exists()) {
                 return true;

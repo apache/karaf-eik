@@ -77,6 +77,7 @@ public final class KarafLaunchUtils {
         // Add the lib directory for completeness, if the developer is pulling a
         // target platform they better know what the are doing
         directories.add(karafPlatformModel.getRootDirectory().append("lib").toFile()); // $NON-NLS-1$
+        directories.add(karafPlatformModel.getRootDirectory().append("lib").append("boot").toFile()); // $NON-NLS-1$
 
         return directories;
     }
